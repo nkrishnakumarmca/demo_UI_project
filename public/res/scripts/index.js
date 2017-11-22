@@ -21,18 +21,24 @@ var data_object;
 
 // A $(document).ready() block.
 $(document).ready(function () {
-    
+
+    $("#button-categories").sortable({connectWith: "#filter-categories-area"});
+    $("#filter-categories-area").sortable({connectWith: "#button-categories"});
     /* Extend Jquery validator to validate product name */
     $.validator.addMethod("validateName", function (value, element, options) {
         var inputData = getInputData();
-        return !editId ? (!data_object.find(o => o.name === inputData.name.trim())) : (!data_object.find(o => ( o.name === inputData.name.trim() && o._id !== editId) ));
-    }, "Product name already exist.");
+        return !editId ?
+            (!data_object.find(o => (o.name === inputData.name.trim() && o.category === inputData.category.trim() ) )) : 
+            (!data_object.find(o => (o.name === inputData.name.trim() && o.category === inputData.category.trim()  && o._id !== editId )));
+    }, "Product name already exist in this category.");
 
     /* Extend Jquery validator to validate category name */
-    $.validator.addMethod("validateCategory", function (value, element, options) {
-        var inputData = getInputData();
-        return !editId ? (!data_object.find(o => o.category === inputData.category.trim())) :  (!data_object.find(o => (o.category === inputData.category.trim() && o._id !== editId) )) ;
-    }, "Category already exist.");
+    // $.validator.addMethod("validateCategory", function (value, element, options) {
+    //     var inputData = getInputData();
+    //     return !editId ? 
+    //            (!data_object.find(o => (o.category === inputData.category.trim() && o.name === inputData.name.trim() )))  :
+    //            (!data_object.find(o => (o.category === inputData.category.trim() && o.name === inputData.name.trim() && o._id !== editId) )) ;
+    // }, "Category already exist.");
 
     /* Form Validation */
     $('#product-form').validate({
@@ -42,8 +48,7 @@ $(document).ready(function () {
                 validateName: true
             },
             addCategory: {
-                required: true,
-                validateCategory: true
+                required: true
             },
             addPrice: {
                 required: true,
@@ -111,6 +116,7 @@ $(document).ready(function () {
                 document.getElementById("add-description").value = element.description;
             }
         });
+        $('body').scrollTop(250);
         $('#product-form').valid();
         $(document).on("click", "#update-form", function () {
             editProduct(editId);
@@ -311,6 +317,7 @@ function removeProduct(id) {
         },
         complete: function () {
             $("#alert-banner").html('<div class="alert alert-success alert-dismissable fade in" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>Deleted Successfully</div>');
+            setTimeout(function(){ $("#alert-banner").slideUp(500); }, 3000);
             reloadProducts();
         }
     });
@@ -329,7 +336,10 @@ function editProduct(id) {
         }
     }).done(function () {
         $("#alert-banner-form").html('<div class="alert alert-success alert-dismissable fade in" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>Updated Successfully</div>');
+        setTimeout(function(){ $("#alert-banner-form").slideUp(500); }, 3000);
         reloadProducts();
+        $("#heading-form").html("Add Product");
+        $("#update-form").replaceWith("<button id='save-form' name='success' class='btn btn-success'>Submit</button>");
     });
     //write your code here to update the product and call when update button clicked
 
@@ -346,6 +356,7 @@ function createProduct(newData) {
         }
     }).done(function () {
         $("#alert-banner-form").html('<div class="alert alert-success alert-dismissable fade in" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>Product Successfully Saved</div>');
+        setTimeout(function(){ $("#alert-banner-form").slideUp(500); }, 3000);
         reloadProducts();
     });
 
@@ -384,8 +395,8 @@ $(document).ready(function () {
     $("#searchText").keyup(function () {
         var searchText = $(this).val();
 
-        $("#product-list div").each(function (key, productListDiv) {
-            if ($(productListDiv).text().search(searchText) < 0) {
+        $("#product-list > div").each(function (key, productListDiv) {
+            if ($(productListDiv).text().toLowerCase().search(searchText.toLowerCase()) < 0) {
                 $(productListDiv).hide();
             } else {
                 $(productListDiv).show();
@@ -428,6 +439,7 @@ function uploadImage(id, file) {
         }
     }).done(function () {
         $("#alert-banner").html('<div class="alert alert-success alert-dismissable fade in" role="alert"><button type="button" class="close" data-dismiss="alert" aria-label="Close"><span aria-hidden="true">&times;</span></button>Image Uploaded Successfully</div>');
+        setTimeout(function(){ $("#alert-banner").slideUp(500); }, 3000);
         reloadProducts();
     });
 }
