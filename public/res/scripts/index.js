@@ -10,10 +10,8 @@
 
 
 /*Global Variables Section*/
-var product_template = "";
-var button_categories = "";
-var responseObj;
-var data_object;
+var product_template = "", button_categories = "";
+var responseObj, data_object, categoryArr = [];
 
 //Declare your Global Variables inside this block
 
@@ -22,8 +20,16 @@ var data_object;
 // A $(document).ready() block.
 $(document).ready(function () {
 
-    $("#button-categories").sortable({connectWith: "#filter-categories-area"});
-    $("#filter-categories-area").sortable({connectWith: "#button-categories"});
+    $("#filter-categories-area").kendoSortable({
+        connectWith: "#button-categories",
+        change: function( ) {
+            filterProduct($("#searchText").val())
+        }
+    });
+    $("#button-categories").kendoSortable({
+        connectWith: "#filter-categories-area"
+    });
+
     /* Extend Jquery validator to validate product name */
     $.validator.addMethod("validateName", function (value, element, options) {
         var inputData = getInputData();
@@ -154,7 +160,7 @@ function getProducts() {
                     data_object = item;
                     $.each(item, function (key, value) {
                         //Right Code to update in the Product Template
-                        product_template += "<div class='col-md-12 panel panel-default'>"
+                        product_template += "<div class='col-md-12 panel panel-default' data-category='" + value.category + "'>"
                             + "<div class='col-lg-3 col-md-3'><div>"
                             + "<img id='image-div-" + value._id + "' src=" + value.productImg.filePath.substr(9) + " style='width:100%'></div>"
                             + "<div id='upload'><button class='btn btn-link' style='padding-left: 45%' id='upload-" + value._id + "'>"
@@ -169,7 +175,10 @@ function getProducts() {
                             + "<span class='glyphicon glyphicon-trash'></span> Remove</button>"
                             + "<button id='edit-product-" + value._id + "' class='btn btn-success'>"
                             + "<span class='glyphicon glyphicon-edit'></span> Edit</button></div></div></div>"
-                        button_categories += "<button id='drag-" + value.category + "' class='btn btn-success draggable'>" + value.category + "</button> ";
+                        if (categoryArr.indexOf(value.category) < 0) {
+                            button_categories += "<button id='drag-" + value.category + "' class='btn btn-success draggable'>" + value.category + "</button> ";
+                            categoryArr.push(value.category);
+                        }
                     });
                 }
             });
@@ -390,19 +399,35 @@ function createProduct(newData) {
  */
 
 
+/**
+ * Function is to filter the products 
+ * @param {*search keyward} keyword 
+ * @param {*category array to filter} categories 
+ */
+function filterProduct( keyword ){
+    /** Filter for category */
+    var categories = [];
+    $('#filter-categories-area button').each(function(i, obj) {
+        categories.push( $(obj).html() );
+    });
+    /** Start filtering the section */
+    $("#product-list > div").each(function (key, productListDiv) {
+        var category = $(productListDiv).attr('data-category');
+        if (($(productListDiv).text().toLowerCase().search(keyword.toLowerCase()) < 0) ||
+        ( categories.length !=0 && categories.indexOf(category) == -1) ) {
+            $(productListDiv).hide();
+        } else {
+            $(productListDiv).show();
+        }
+    });
+}
+
 //Code block for Free Text Search
 $(document).ready(function () {
     $("#searchText").keyup(function () {
-        var searchText = $(this).val();
-
-        $("#product-list > div").each(function (key, productListDiv) {
-            if ($(productListDiv).text().toLowerCase().search(searchText.toLowerCase()) < 0) {
-                $(productListDiv).hide();
-            } else {
-                $(productListDiv).show();
-            }
-        });
-
+        var keyword = $(this).val();
+        filterProduct(keyword);
+        
         /*
             //Write your code here for the Free Text Search
             When the user types text in the search input box. 
@@ -415,9 +440,7 @@ $(document).ready(function () {
             
             The search string maybe present in any one of the fields
             anywhere in the content
-
          */
-
     });
 
 });
