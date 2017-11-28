@@ -153,7 +153,6 @@ function getProducts() {
             responseObj = JSON.parse(this.response);
             //User cannot print JSON Object directly, so require JQuery to iterate
             // and show it in HTML
-            //product_template="<table>";
 
             $.each(responseObj, function (i, item) {
                 if (i == "data") {
@@ -182,11 +181,12 @@ function getProducts() {
                     });
                 }
             });
+            $('#product-list').html(product_template); product_template = '';
         } else if (this.status == 404) {
-            document.getElementById("product-list").innerHTML = "<h4>No Products Available</h4>"
+            $('#product-list').html("<h4>No Products Available</h4>");
         }
-        document.getElementById("product-list").innerHTML = product_template;
-        document.getElementById("button-categories").innerHTML = button_categories;
+        $('#button-categories').html(button_categories);
+        $('#filter-categories-area').html('');
     };
     xhttp.open("GET", "products", true);
     xhttp.send();
@@ -311,6 +311,7 @@ function reloadProducts() {
     $("#product-list").empty();
     $('#button-categories').empty();
     $('#product-form').trigger("reset");
+    categoryArr = [];
     getProducts();
 }
 
